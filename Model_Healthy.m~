@@ -246,7 +246,6 @@ for y = 1:length(IDs)
         recall(c) = matRF(c,c)/sum(matRF(c,:)); %recall
         F1(c) = 2*((precision(c)*recall(c))/(precision(c)+recall(c)));
         
-        %In case of NaN, set to zero
         if isnan(precision(c))
             precision(c) = 0;
         end
@@ -263,7 +262,7 @@ for y = 1:length(IDs)
     end
     correct = sum(matRF,2);
     diagonal = diag(matRF);
-    BER = (1/length(ind)).*sum((correct(ind)-diagonal(ind))./(correct(ind)));
+    BER = mean((correct(ind)-diagonal(ind))./(correct(ind)));
     
     %Save data
     results_healthy(y).ID = IDs(y);
@@ -275,7 +274,6 @@ for y = 1:length(IDs)
     results_healthy(y).recall = recall;
     results_healthy(y).F1 = F1;
     results_healthy(y).BER = BER;
-    results_healthy(y).BACC = 1-BER;
 end
 
 %% SAVE DATA
