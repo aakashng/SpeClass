@@ -18,4 +18,8 @@ function classifierData = isolateSubject(classifierData,indices)
     classifierData.subjectID(ind) = [];
     classifierData.sessionID(ind) = [];
     classifierData.states(ind) = [];
+    try
+        classifierData.subjectBrace(ind) = [];
+    catch
+    end
 end

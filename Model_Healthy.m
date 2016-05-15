@@ -1,10 +1,10 @@
-%% RF for Training on Healthy and Testing on Patients
+%% RF for Training on Healthy and Testing on CBR
 %Aakash Gupta
 
 %% LOAD DATA AND INITIALIZE PARAMETERS
 clear all, close all;
 
-patient_stairs = [2 8 11 12 15];
+patient_stairs = [8 11 12 14 15 19];
 disp(patient_stairs);
 
 p = gcp('nocreate');
@@ -179,7 +179,6 @@ fprintf('\n')
 states = {'Sitting';'Stairs Dw';'Stairs Up';'Standing';'Walking'};
 IDs = unique(cData.subjectID);
 results_healthy = []; %store all the results
-results_healthy.IDs = IDs;
 
 %Cycle through each patient
 for y = 1:length(IDs)
@@ -215,9 +214,7 @@ for y = 1:length(IDs)
     subjectID_p(stairs_remove) = [];
     sessionID_p(stairs_remove) = [];
     uniqStates_p  = unique(statesTrue_p);
-    
-    n_train(y) = size(features_p,1);
-    
+        
     %Generate codesTrue
     codesTrue_p = zeros(1,length(statesTrue_p));
     for i = 1:length(statesTrue_p)
@@ -229,10 +226,10 @@ for y = 1:length(IDs)
     disp(['RF Train - Patient '  num2str(IDs(y)) '  #Samples Test = ' num2str(size(features_p,1))]);
     
     %Test Random Forest
-    [codesRF,P_RF_main] = predict(RFmodel_h,features_p);
+    [codesRF,P_RF] = predict(RFmodel_h,features_p);
     codesRF = str2num(cell2mat(codesRF));
     
-    %Collect Accuracies
+    %Accuracy
     [matRF, accRF] = confusionMatrix_5(codesTrue_p,codesRF);
     disp(matRF)
     disp(accRF)
@@ -280,3 +277,6 @@ end
 
 %% SAVE DATA
 save('results_healthy.mat','results_healthy')
+fprintf('\n')
+disp('Results saved (results_healthy.mat).')
+open results_healthy

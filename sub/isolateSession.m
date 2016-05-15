@@ -16,6 +16,11 @@ function classifierData = isolateSession(classifierData,max_sessions,min_session
             classifierData.subjectID(ind) = [];
             classifierData.sessionID(ind) = [];
             classifierData.states(ind) = [];
+            
+            try
+                classifierData.subjectBrace(ind) = [];
+            catch
+            end
         end
     end
 end
