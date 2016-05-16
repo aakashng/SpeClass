@@ -4,10 +4,9 @@
 %% LOAD DATA AND INITIALIZE PARAMETERS
 clear all, close all;
 
+iterations = 1000;
 patient_stairs = [8 11 12 14 15 19];
 disp(patient_stairs);
-
-iterations = 100;
 
 p = gcp('nocreate');
 if isempty(p)
