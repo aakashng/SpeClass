@@ -4,7 +4,7 @@
 %% LOAD DATA AND INITIALIZE PARAMETERS
 clear all, close all;
 
-patient_stairs = [8 11 12 14 15];
+patient_stairs = [8 11 12 14 15 19];
 disp(patient_stairs);
 
 iterations = 100;
