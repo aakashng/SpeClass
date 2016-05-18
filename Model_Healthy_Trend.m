@@ -208,7 +208,7 @@ for n = 1:length(IDs_h) %number of people to train on
 end
 
 %% PLOT DATA
-figure;
+%figure;
 hold on
 N = size(mat_BACC,2) + 1; %number of patients
 avg = mean(mat_BACC,1); %average

@@ -251,10 +251,10 @@ ylim([0.5 0.7])
 set(gca,'Box','off','XTick',[1:(N-1)],'YTick',[0.1:0.025:1],'TickDir','out','LineWidth',2,'FontSize',14,'FontWeight','bold','XGrid','off');
 
 %Exponential fit (a*exp(-b*x)+c)
-a = -0.1768;
-b = 0.4604;
-c = 0.6426;
-r2 = 0.9867;
+a = -0.1598;
+b = 0.3976;
+c = 0.6741;
+r2 = 0.9368;
 x_fit = [0:0.0001:N];
 y_fit = (a*exp(-b*x_fit)+c);
 h2 = plot(x_fit,y_fit,'r-','LineWidth',2');
