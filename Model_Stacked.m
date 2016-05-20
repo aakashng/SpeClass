@@ -85,14 +85,60 @@ fprintf('\n')
 cData_CBR = isolateBrace(cData,'Cbr');
 cData_SCO = isolateBrace(cData,'SCO');
 
-%% CYCLE THROUGH EACH PATIENT
+%% TRAIN PERSONAL FORESTS ON SCO DATA
 states = {'Sitting';'Stairs Dw';'Stairs Up';'Standing';'Walking'};
 IDs = user_subjects;
-ntrees = 100;
+ntrees1 = 100;
+ntrees2 = 10;
 opts_ag = statset('UseParallel',1);
+models(length(IDs)).IDs = [];
+models(length(IDs)).SCO = []; %struct that will contain all the forests
 results_stacked = []; %store all the results
 
-%Cycle through each patient
+disp('Layer 1: Training models...')
+parfor k = 1:length(IDs) 
+    %% EXTRACT EACH PATIENT'S DATA
+    models(k).IDs = IDs(k);
+    patient_ind = find(cData_SCO.subjectID == IDs(k));
+    patient_SCO = isolateSubject(cData_SCO,patient_ind);
+    
+    %Extract data
+    features_SCO     = patient_SCO.features; %features for classifier
+    subjects_SCO     = patient_SCO.subject;  %subject number
+    uniqSubjects_SCO = unique(subjects_SCO); %list of subjects
+    statesTrue_SCO = patient_SCO.activity;     %all the classifier data
+    subjectID_SCO = patient_SCO.subjectID;
+    sessionID_SCO = patient_SCO.sessionID;
+    
+    %Remove stairs data from specific patient
+    if ismember(IDs(k),patient_stairs)
+        a = strmatch('Stairs Up',statesTrue_SCO,'exact');
+        b = strmatch('Stairs Dw',statesTrue_SCO,'exact');
+        stairs_remove = [a; b];
+        features_SCO(stairs_remove,:) = [];
+        subjects_SCO(stairs_remove) = [];
+        statesTrue_SCO(stairs_remove) = [];
+        subjectID_SCO(stairs_remove) = [];
+        sessionID_SCO(stairs_remove) = [];
+        uniqStates_SCO = unique(statesTrue_SCO);
+    else
+        uniqStates_SCO = unique(statesTrue_SCO);
+    end
+    
+    %Generate codesTrue
+    codesTrue_SCO = zeros(1,length(statesTrue_SCO));
+    for i = 1:length(statesTrue_SCO)
+        codesTrue_SCO(i) = find(strcmp(statesTrue_SCO{i},states));
+    end
+    
+    %% TRAIN INDIVIDUAL RFs (Layer 1)
+    models(k).SCO = TreeBagger(ntrees1,features_SCO,codesTrue_SCO','OOBVarImp',OOBVarImp,'Options',opts_ag);
+    disp(['   Model trained on Patient ' num2str(IDs(k)) ' SCO data.'])
+end
+disp('Layer 1: Training complete')
+fprintf('\n')
+
+%% CYCLE THROUGH EACH PATIENT
 for y = 1:length(IDs)
     %% DISPLAY INFORMATION
     disp(['PATIENT ' num2str(IDs(y)) ':'])
@@ -172,58 +218,20 @@ for y = 1:length(IDs)
     posteriors_new = [];
     
     for k = 1:length(IDs)
-        %% EXTRACT EACH PATIENT'S DATA
-        patient_ind = find(cData_SCO.subjectID == IDs(k));
-        patient_SCO = isolateSubject(cData_SCO,patient_ind);
-        
-        %Extract data
-        features_SCO     = patient_SCO.features; %features for classifier
-        subjects_SCO     = patient_SCO.subject;  %subject number
-        uniqSubjects_SCO = unique(subjects_SCO); %list of subjects
-        statesTrue_SCO = patient_SCO.activity;     %all the classifier data
-        subjectID_SCO = patient_SCO.subjectID;
-        sessionID_SCO = patient_SCO.sessionID;
-        
-        %Remove stairs data from specific patient
-        if ismember(IDs(k),patient_stairs)
-            a = strmatch('Stairs Up',statesTrue_SCO,'exact');
-            b = strmatch('Stairs Dw',statesTrue_SCO,'exact');
-            stairs_remove = [a; b];
-            features_SCO(stairs_remove,:) = [];
-            subjects_SCO(stairs_remove) = [];
-            statesTrue_SCO(stairs_remove) = [];
-            subjectID_SCO(stairs_remove) = [];
-            sessionID_SCO(stairs_remove) = [];
-            uniqStates_SCO = unique(statesTrue_SCO);
-        else
-            uniqStates_SCO = unique(statesTrue_SCO);
-        end
-        
-        %Generate codesTrue
-        codesTrue_SCO = zeros(1,length(statesTrue_SCO));
-        for i = 1:length(statesTrue_SCO)
-            codesTrue_SCO(i) = find(strcmp(statesTrue_SCO{i},states));
-        end
-        
-        %% TRAIN INDIVIDUAL RFs (Layer 1)
-        RFmodel_SCO = TreeBagger(ntrees,features_SCO,codesTrue_SCO','OOBVarImp',OOBVarImp,'Options',opts_ag);
-
         %% TEST INDIVIDUAL RFs (Layer 1)
         %Test on main sessions
-        [codesRF_main,P_RF_main] = predict(RFmodel_SCO,features_main);
+        [codesRF_main,P_RF_main] = predict(models(k).SCO,features_main);
         codesRF_main = str2num(cell2mat(codesRF_main));
         
         %Test on new sessions
-        [codesRF_new,P_RF_new] = predict(RFmodel_SCO,features_new);
+        [codesRF_new,P_RF_new] = predict(models(k).SCO,features_new);
         codesRF_new = str2num(cell2mat(codesRF_new));
         
         %Collect posteriors
         posteriors_main = [posteriors_main P_RF_main];
         posteriors_new = [posteriors_new P_RF_new];
-        
-        %Display message
-        disp(['   Patient ' num2str(IDs(k)) ' model complete.'])
-    end    
+    end
+    
     %% ADDITIONAL FEATURES
     featuresTR_main = getFeaturesTR(posteriors_main);
     featuresTR_new = getFeaturesTR(posteriors_new);
@@ -232,7 +240,7 @@ for y = 1:length(IDs)
     disp('Initiating Layer 2...');
     
     %Random Forest (RF)
-    RFmodel = TreeBagger(ntrees,featuresTR_new,codesTrue_new,'OOBVarImp',OOBVarImp,'Options',opts_ag);
+    RFmodel = TreeBagger(ntrees2,featuresTR_new,codesTrue_new,'OOBVarImp',OOBVarImp,'Options',opts_ag);
     
     %% LAYER 2: Test
     [codesRF_FINAL,P_RF_FINAL] = predict(RFmodel,featuresTR_main);
@@ -240,6 +248,16 @@ for y = 1:length(IDs)
     [matRF, accRF] = confusionMatrix_5(codesTrue_main,codesRF_FINAL);
     disp(matRF)
     disp(accRF)
+    
+%     %Linear Support Vector Machine (SVM)
+%     disp('Linear Support Vector Machine (SVM):')
+%     options = statset('UseParallel',1);
+%     template = templateSVM('KernelFunction', 'linear', 'PolynomialOrder', [], 'KernelScale', 'auto', 'BoxConstraint', 1, 'Standardize', 1);
+%     trainedClassifier = fitcecoc(featuresTR_new, codesTrue_new, 'Learners', template, 'FitPosterior', 1, 'Coding', 'onevsone', 'ResponseName', 'outcome','Options',options);
+%     [codesSVM_FINAL, ~, ~, ~] = predict(trainedClassifier,featuresTR_main);
+%     [matRF,accRF,~] = createConfusionMatrix(codesTrue_main,codesSVM_FINAL);
+%     disp(matRF)
+%     disp(accRF)
     
     %Precision, Recall, and F1
     precision = zeros(length(states),1);
