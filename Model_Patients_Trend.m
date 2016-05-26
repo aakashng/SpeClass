@@ -117,12 +117,13 @@ for n = 1:(length(IDs)-1) %number of people to train on
         disp(['Train on ' num2str(n) ' subjects. Iteration: ' num2str(m)])
         
         %% DETERMINE TRAIN/TESTING
-        %Randomly shuffle IDs
+        %Randomly shuffle IDs + select training patients
         IDs_rand = IDs(randperm(length(IDs)));
-        
-        %Randomly select who to train and test on (and sort IDs)
         IDs_train = unique(IDs_rand(1:n)); %number of IDs to train on changes in each iteration of n
-        IDs_test = unique(IDs_rand(n+1)); %use the next ID as the testing
+
+        %Randomly shuffle IDs + select training patients
+        IDs_rand = IDs(randperm(length(IDs))); %reshuffle
+        IDs_test = unique(IDs_rand(1)); %use the next ID as the testing
         
         %% TRAIN RF
         %Isolate training patients SCO data
@@ -238,24 +239,25 @@ end
 %Mean +/- SEM
 figure;
 hold on
-N = size(mat_BACC,2) + 1; %number of patients
+N = size(mat_BACC,2); %number of patients
+x = 1:N;
 avg = mean(mat_BACC,1); %average
 sem = std(mat_BACC,[],1)./sqrt(size(mat_BACC,1)); %standard error of the mean
 stddev = std(mat_BACC,[],1); %standard error of the mean
-errorbar(1:N-1,avg,sem,'ko-','LineWidth',2,'markerfacecolor','k');
+errorbar(1:N,avg,sem,'ko-','LineWidth',2,'markerfacecolor','k');
 %h1 = shadedErrorBar(1:N-1,avg,sem,{'k-o','markerfacecolor','k'},1);
 xlabel('Number of subjects trained on','FontSize',16);
 ylabel('Balanced Accuracy','FontSize',16);
-xlim([0.5 (N-0.5)])
+xlim([0.5 (N+0.5)])
 ylim([0.5 0.7])
-set(gca,'Box','off','XTick',[1:(N-1)],'YTick',[0.1:0.025:1],'TickDir','out','LineWidth',2,'FontSize',14,'FontWeight','bold','XGrid','off');
+set(gca,'Box','off','XTick',[1:N],'YTick',[0.1:0.025:1],'TickDir','out','LineWidth',2,'FontSize',14,'FontWeight','bold','XGrid','off');
 
 %Exponential fit (a*exp(-b*x)+c)
-a = -0.1598;
-b = 0.3976;
-c = 0.6741;
-r2 = 0.9368;
-x_fit = [0:0.0001:N];
+a = -0.1664;
+b = 0.3984;
+c = 0.6745;
+r2 = 0.9615;
+x_fit = [0:0.0001:N+1];
 y_fit = (a*exp(-b*x_fit)+c);
 h2 = plot(x_fit,y_fit,'r-','LineWidth',2');
 

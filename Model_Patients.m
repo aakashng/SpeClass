@@ -56,9 +56,9 @@ pause(1)
 user_subjects = [];
 subject_indices = [];
 proceed = 1;
-while proceed > 0 
+while proceed > 0
     subject_analyze = input('Subject ID to analyze (ex. 5): ');
-
+    
     if (subject_analyze == 0)
         proceed = 0;
     else
@@ -83,7 +83,7 @@ cData_temp = trainingClassifierData;
 proceed = 1;
 while proceed > 0
     fprintf('\n')
-    disp('Please enter the max number of sessions to analyze.'); 
+    disp('Please enter the max number of sessions to analyze.');
     disp('Or type 0 to analyze all sessions available.')
     min_sessions = input('Min session ID: ');
     max_sessions = input('Max session ID: ');
@@ -102,6 +102,7 @@ fprintf('\n')
 states = {'Sitting';'Stairs Dw';'Stairs Up';'Standing';'Walking'};
 IDs = user_subjects;
 results_patients = []; %store all the results
+
 
 %Cycle through each patient
 for y = 1:length(IDs)
@@ -152,7 +153,7 @@ for y = 1:length(IDs)
     
     %Train Random Forest
     ntrees = 50;
-    disp(['RF Train - Patient '  num2str(IDs(y)) '  #Samples Train = ' num2str(size(features_p,1))]);
+    disp(['RF Train - Patient ' num2str(IDs(y)) ' | #Samples Train = ' num2str(size(features_p,1))]);
     opts_ag = statset('UseParallel',1);
     RFmodel_p = TreeBagger(ntrees,features_p,codesTrue_p','OOBVarImp',OOBVarImp,'Options',opts_ag);
     
@@ -190,7 +191,7 @@ for y = 1:length(IDs)
     for i = 1:length(statesTrue)
         codesTrue(i)  = find(strcmp(statesTrue{i},states));
     end
-        
+    
     %Test Random Forest
     [codesRF,P_RF] = predict(RFmodel_p,features);
     codesRF = str2num(cell2mat(codesRF));
