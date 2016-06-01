@@ -228,7 +228,7 @@ for m = 1:length(trees)
             elseif length(uniqStates) == 5 %stairs
                 ind = [1:5];
             else
-                error('Weird number of classes present in testing set')
+                    error('Weird number of classes present in testing set')
             end
             correct = sum(matRF,2);
             diagonal = diag(matRF);
