@@ -212,8 +212,8 @@ for y = 1:length(IDs)
     results_personalCBR(y).BACC = 1-BER;
 end
 
-%% SAVE DATA
-save('results_personalCBR.mat','results_personalCBR')
-fprintf('\n')
-disp('Results saved (results_personalCBR.mat).')
-open results_personalCBR
+% %% SAVE DATA
+% save('results_personalCBR.mat','results_personalCBR')
+% fprintf('\n')
+% disp('Results saved (results_personalCBR.mat).')
+% open results_personalCBR

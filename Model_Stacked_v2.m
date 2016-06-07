@@ -12,7 +12,7 @@ if isempty(p)
     parpool('local')
 end
 
-cd(fileparts(which('Model_Stacked_v2.m')))
+cd(fileparts(which('Model_Stacked.m')))
 currentDir = pwd;
 slashdir = '/';
 addpath([pwd slashdir 'sub']); %create path to helper scripts
@@ -85,14 +85,60 @@ fprintf('\n')
 cData_CBR = isolateBrace(cData,'Cbr');
 cData_SCO = isolateBrace(cData,'SCO');
 
-%% CYCLE THROUGH EACH PATIENT
+%% TRAIN PERSONAL FORESTS ON SCO DATA
 states = {'Sitting';'Stairs Dw';'Stairs Up';'Standing';'Walking'};
 IDs = user_subjects;
-ntrees = 100;
+ntrees1 = 100;
+ntrees2 = 100;
 opts_ag = statset('UseParallel',1);
-models = []; %struct that will contain all the forests
+models(length(IDs)).IDs = [];
+models(length(IDs)).SCO = []; %struct that will contain all the forests
 results_stacked = []; %store all the results
 
+disp('Layer 1: Training models...')
+parfor k = 1:length(IDs) 
+    %% EXTRACT EACH PATIENT'S DATA
+    models(k).IDs = IDs(k);
+    patient_ind = find(cData_SCO.subjectID == IDs(k));
+    patient_SCO = isolateSubject(cData_SCO,patient_ind);
+    
+    %Extract data
+    features_SCO     = patient_SCO.features; %features for classifier
+    subjects_SCO     = patient_SCO.subject;  %subject number
+    uniqSubjects_SCO = unique(subjects_SCO); %list of subjects
+    statesTrue_SCO = patient_SCO.activity;     %all the classifier data
+    subjectID_SCO = patient_SCO.subjectID;
+    sessionID_SCO = patient_SCO.sessionID;
+    
+    %Remove stairs data from specific patient
+    if ismember(IDs(k),patient_stairs)
+        a = strmatch('Stairs Up',statesTrue_SCO,'exact');
+        b = strmatch('Stairs Dw',statesTrue_SCO,'exact');
+        stairs_remove = [a; b];
+        features_SCO(stairs_remove,:) = [];
+        subjects_SCO(stairs_remove) = [];
+        statesTrue_SCO(stairs_remove) = [];
+        subjectID_SCO(stairs_remove) = [];
+        sessionID_SCO(stairs_remove) = [];
+        uniqStates_SCO = unique(statesTrue_SCO);
+    else
+        uniqStates_SCO = unique(statesTrue_SCO);
+    end
+    
+    %Generate codesTrue
+    codesTrue_SCO = zeros(1,length(statesTrue_SCO));
+    for i = 1:length(statesTrue_SCO)
+        codesTrue_SCO(i) = find(strcmp(statesTrue_SCO{i},states));
+    end
+    
+    %% TRAIN INDIVIDUAL RFs (Layer 1)
+    models(k).SCO = TreeBagger(ntrees1,features_SCO,codesTrue_SCO','OOBVarImp',OOBVarImp,'Options',opts_ag);
+    disp(['   Model trained on Patient ' num2str(IDs(k)) ' SCO data.'])
+end
+disp('Layer 1: Training complete')
+fprintf('\n')
+
+%% CYCLE THROUGH EACH PATIENT
 for y = 1:length(IDs)
     %% DISPLAY INFORMATION
     disp(['PATIENT ' num2str(IDs(y)) ':'])
@@ -171,70 +217,57 @@ for y = 1:length(IDs)
     posteriors_main = [];
     posteriors_new = [];
     
-    %% EXTRACT EACH PATIENT'S DATA
-    patient_ind = find(cData_SCO.subjectID == IDs(y));
-    patient_SCO = isolateSubject(cData_SCO,patient_ind);
+    temp = 1:length(IDs);
+    temp(y) = []; %exclude current patient from the list of IDs
     
-    %Extract data
-    features_SCO     = patient_SCO.features; %features for classifier
-    subjects_SCO     = patient_SCO.subject;  %subject number
-    uniqSubjects_SCO = unique(subjects_SCO); %list of subjects
-    statesTrue_SCO = patient_SCO.activity;     %all the classifier data
-    subjectID_SCO = patient_SCO.subjectID;
-    sessionID_SCO = patient_SCO.sessionID;
-    
-    %Remove stairs data from specific patient
-    if ismember(IDs(y),patient_stairs)
-        a = strmatch('Stairs Up',statesTrue_SCO,'exact');
-        b = strmatch('Stairs Dw',statesTrue_SCO,'exact');
-        stairs_remove = [a; b];
-        features_SCO(stairs_remove,:) = [];
-        subjects_SCO(stairs_remove) = [];
-        statesTrue_SCO(stairs_remove) = [];
-        subjectID_SCO(stairs_remove) = [];
-        sessionID_SCO(stairs_remove) = [];
-        uniqStates_SCO = unique(statesTrue_SCO);
-    else
-        uniqStates_SCO = unique(statesTrue_SCO);
+    for k = temp
+        %% TEST INDIVIDUAL RFs (Layer 1)
+        %Test on main sessions
+        disp(['   Predicting with Patient: ' num2str(IDs(k))])
+        
+        [codesRF_main,P_RF_main] = predict(models(k).SCO,features_main);
+        codesRF_main = str2num(cell2mat(codesRF_main));
+        
+        %Test on new sessions
+        [codesRF_new,P_RF_new] = predict(models(k).SCO,features_new);
+        codesRF_new = str2num(cell2mat(codesRF_new));
+        
+        %Collect posteriors
+        posteriors_main = [posteriors_main P_RF_main];
+        posteriors_new = [posteriors_new P_RF_new];
     end
     
-    %Generate codesTrue
-    codesTrue_SCO = zeros(1,length(statesTrue_SCO));
-    for i = 1:length(statesTrue_SCO)
-        codesTrue_SCO(i) = find(strcmp(statesTrue_SCO{i},states));
-    end
-    
-    %% TRAIN INDIVIDUAL RFs (Layer 1)
-    RFmodel_SCO = TreeBagger(ntrees,features_SCO,codesTrue_SCO','OOBVarImp',OOBVarImp,'Options',opts_ag);
-    
-    %% TEST INDIVIDUAL RFs (Layer 1)
-    %Test on main sessions
-    [codesRF_main,P_RF_main] = predict(RFmodel_SCO,features_main);
-    codesRF_main = str2num(cell2mat(codesRF_main));
-    
-    %Test on new sessions
-    [codesRF_new,P_RF_new] = predict(RFmodel_SCO,features_new);
-    codesRF_new = str2num(cell2mat(codesRF_new));
-    
-    %Collect posteriors
-    posteriors_main = [posteriors_main P_RF_main];
-    posteriors_new = [posteriors_new P_RF_new];
-    
-    %Display message
-    disp(['   Patient ' num2str(IDs(y)) ' model complete.'])
-    
-        %% ADDITIONAL FEATURES
+    %% ADDITIONAL FEATURES
     featuresTR_main = getFeaturesTR(posteriors_main);
     featuresTR_new = getFeaturesTR(posteriors_new);
+    
+    %% PRINCIPAL COMPONENTS ANALYSIS (PCA)
+    %Perform PCA on the features from the new session
+    [coeff, pca_new, ~, ~, explained, mu] = pca(featuresTR_new);
+    
+    %Find number of PCs that explain enough variance
+    var_thresh = 99; %amount of variance to be explained
+    ind_thresh = 0; %number of PCs needed to explain
+    total = 0;
+    for p = 1:length(explained)
+        total = total + explained(p);
+        if total > var_thresh
+            ind_thresh = p;
+            break
+        end
+    end
+    
+    %Project features from the main sessions into the PC space
+    pca_main = (featuresTR_main - repmat(mu,size(featuresTR_main,1),1))*coeff(:,1:ind_thresh);
     
     %% LAYER 2: Train 
     disp('Initiating Layer 2...');
     
     %Random Forest (RF)
-    RFmodel = TreeBagger(ntrees,featuresTR_new,codesTrue_new,'OOBVarImp',OOBVarImp,'Options',opts_ag);
+    RFmodel = TreeBagger(ntrees2,pca_new(:,1:ind_thresh),codesTrue_new,'OOBVarImp',OOBVarImp,'Options',opts_ag);
     
     %% LAYER 2: Test
-    [codesRF_FINAL,P_RF_FINAL] = predict(RFmodel,featuresTR_main);
+    [codesRF_FINAL,P_RF_FINAL] = predict(RFmodel,pca_main);
     codesRF_FINAL = str2num(cell2mat(codesRF_FINAL));
     [matRF, accRF] = confusionMatrix_5(codesTrue_main,codesRF_FINAL);
     disp(matRF)
@@ -295,8 +328,8 @@ for y = 1:length(IDs)
     fprintf('\n')
 end
 
-%% SAVE DATA
-save('results_stacked.mat','results_stacked')
-fprintf('\n')
-disp('Results saved (results_stacked.mat).')
-open results_stacked
+% %% SAVE DATA
+% save('results_stacked.mat','results_stacked')
+% fprintf('\n')
+% disp('Results saved (results_stacked.mat).')
+% open results_stacked
