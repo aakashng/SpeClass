@@ -13,13 +13,13 @@ max_subjects = 10;
 data = zeros(max_subjects,4);
 
 for ii = 1:max_subjects
-    load results_healthy.mat
+    load results_healthy_RUS.mat
     data(ii,1) = results_healthy(ii).BACC;
-    load results_patients.mat
+    load results_patients_RUS.mat
     data(ii,2) = results_patients(ii).BACC;
-    load results_personalSCO.mat
+    load results_personalSCO_RUS.mat
     data(ii,3) = results_personalSCO(ii).BACC;
-    load results_personalCBR.mat
+    load results_personalCBR_RUS.mat
     data(ii,4) = results_personalCBR(ii).BACC;
 end
 

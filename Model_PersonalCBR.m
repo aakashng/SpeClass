@@ -38,6 +38,7 @@ filename = ['trainData_' population '.mat'];
 load(filename)
 
 %% User Input for Which Subject to Analyze
+default_subjects = [1, 2, 5, 6, 8, 11, 14, 15, 16, 19]; %all patients with 4 sessions in CBR (as in paper)
 tt = num2str(unique(trainingClassifierData.subjectID)');
 fprintf('\n')
 fprintf('Subject IDs present for analysis: %s',tt)
@@ -57,10 +58,20 @@ user_subjects = [];
 subject_indices = [];
 proceed = 1;
 while proceed > 0 
-    subject_analyze = input('Subject ID to analyze (ex. 5): ');
+    subject_analyze = input('Subject ID to analyze (ex. 5); -1 to select default subset: ');
 
     if (subject_analyze == 0)
         proceed = 0;
+        
+    elseif subject_analyze == -1
+        disp(['Subjects ID analyzed: ',num2str(default_subjects)])
+        subject_analyze = default_subjects;
+        for sa = 1:length(subject_analyze)
+            subject_indices = [subject_indices; find(subject_analyze(sa)==all_subjectID)];
+        end
+        user_subjects = subject_analyze;
+        proceed = 0;
+        
     else
         %Check if subjectID is in mat file
         if ~any(subject_analyze == all_subjectID)
