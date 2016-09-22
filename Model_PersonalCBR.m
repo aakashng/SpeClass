@@ -208,7 +208,8 @@ for y = 1:length(IDs)
     end
     correct = sum(matRF,2);
     diagonal = diag(matRF);
-    BER = (1/length(ind)).*sum((correct(ind)-diagonal(ind))./(correct(ind)));
+    acc_c = 1-((correct(ind)-diagonal(ind))./(correct(ind)));    %accuracy per class
+    BER = mean(1-acc_c);
     
     %Save data
     results_personalCBR(y).ID = IDs(y);
@@ -221,10 +222,12 @@ for y = 1:length(IDs)
     results_personalCBR(y).F1 = F1;
     results_personalCBR(y).BER = BER;
     results_personalCBR(y).BACC = 1-BER;
+    results_personalCBR(y).acc_c = acc_c;
+
 end
 
 % %% SAVE DATA
-% save('results_personalCBR.mat','results_personalCBR')
-% fprintf('\n')
-% disp('Results saved (results_personalCBR.mat).')
+save('results_personalCBR.mat','results_personalCBR')
+fprintf('\n')
+disp('Results saved (results_personalCBR.mat).')
 % open results_personalCBR

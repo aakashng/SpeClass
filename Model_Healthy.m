@@ -79,7 +79,7 @@ user_subjects = [];
 subject_indices = [];
 proceed = 1;
 while proceed > 0 
-    subject_analyze = input('Subject ID to analyze (ex. 5): ');
+    subject_analyze = input('Subject ID to analyze (ex. 5); -1 to select default subset: ');
 
     if (subject_analyze == 0)
         proceed = 0;
@@ -270,8 +270,9 @@ for y = 1:length(IDs)
     end
     correct = sum(matRF,2);
     diagonal = diag(matRF);
-    BER = (1/length(ind)).*sum((correct(ind)-diagonal(ind))./(correct(ind)));
-    
+    acc_c = 1-((correct(ind)-diagonal(ind))./(correct(ind)));    %accuracy per class
+    BER = mean(1-acc_c);
+            
     %Save data
     results_healthy(y).ID = IDs(y);
     results_healthy(y).accRF = accRF;
@@ -283,6 +284,7 @@ for y = 1:length(IDs)
     results_healthy(y).F1 = F1;
     results_healthy(y).BER = BER;
     results_healthy(y).BACC = 1-BER;
+    results_healthy(y).acc_c = acc_c;
 end
 
 %% SAVE DATA
