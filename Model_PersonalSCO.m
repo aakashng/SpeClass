@@ -235,6 +235,9 @@ for y = 1:length(IDs)
     %BER (Balanced Error Rate)
     if length(uniqStates) == 3 %no stairs
         ind = [1 4 5];
+        %set precision and recall to nan for patients with no stairs
+        precision([2 3]) = nan;
+        recall([2 3]) = nan;
     elseif length(uniqStates) == 5 %stairs
         ind = [1:5];
     else

@@ -232,8 +232,7 @@ for y = 1:length(IDs)
     end
     
     %Train Random Forest on Global Patient
-    ntrees = 100;
-    disp(['RF Train - Patient '  num2str(IDs(y)) '  #Samples Test = ' num2str(size(features_p,1))]);
+    disp(['RF Test - Patient '  num2str(IDs(y)) '  #Samples Test = ' num2str(size(features_p,1))]);
     
     %Test Random Forest
     [codesRF,P_RF] = predict(RFmodel_h,features_p);
@@ -261,10 +260,13 @@ for y = 1:length(IDs)
             recall(c) = 0;
         end
     end
-    
+       
     %BER (Balanced Error Rate)
     if length(uniqStates_p) == 3 %no stairs
         ind = [1 4 5];
+        %set precision and recall to nan for patients with no stairs
+        precision([2 3]) = nan;
+        recall([2 3]) = nan;
     elseif length(uniqStates_p) == 5 %stairs
         ind = [1:5];
     end
