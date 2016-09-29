@@ -80,6 +80,7 @@ title('Healthy model','FontSize',14)
 
 
 %create table with precision and recall for each class and subject
+precision = []; recall = [];
 for s = 1:length(results_healthy)
     precision(s,:) = results_healthy(s).precision
     recall(s,:) = results_healthy(s).recall

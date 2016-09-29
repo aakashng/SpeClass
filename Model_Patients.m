@@ -172,7 +172,8 @@ for y = 1:length(IDs)
     %% TEST RF
     %Isolate patient's CBR data
     patient_temp = isolateBrace(cData,'Cbr');
-    ind = find(global_p_temp.subjectID == IDs(y)); %indices for global patients
+%     ind = find(global_p_temp.subjectID == IDs(y)); %indices for global patients
+    ind = find(patient_temp.subjectID == IDs(y)); %indices for global patients
     patient = isolateSubject(patient_temp,ind);
     
     %Extract data
