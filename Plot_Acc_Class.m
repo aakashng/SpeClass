@@ -97,6 +97,8 @@ end
 Precision_mean(1,:) = nanmean(precision)
 Recall_mean(1,:) = nanmean(recall)
 
+%bar plot of the mean accuracy per activity
+m1 = nanmean(acc_model);
 %% Global Patients
 load('results_patients.mat')
 acc_model = nan(length(results_patients),5);
@@ -158,6 +160,7 @@ end
 Precision_mean(2,:) = nanmean(precision);
 Recall_mean(2,:) = nanmean(recall);
 
+m2 = nanmean(acc_model);
 %% Patient specific
 load('results_personalSCO.mat')
 acc_model = nan(length(results_personalSCO),5);
@@ -219,7 +222,7 @@ end
 Precision_mean(3,:) = nanmean(precision);
 Recall_mean(3,:) = nanmean(recall);
 
-
+m3=nanmean(acc_model);
 %% Device specific
 load('results_personalCBR.mat')
 acc_model = nan(length(results_personalCBR),5);
@@ -281,5 +284,10 @@ end
 Precision_mean(4,:) = nanmean(precision)
 Recall_mean(4,:) = nanmean(recall)
 
-    
+m4=nanmean(acc_model);
+
+%% grouped bar chart of the mean across patients for each activity and model
+mall = [m1;m2;m3;m4];
+figure
+bar(mall')
     
