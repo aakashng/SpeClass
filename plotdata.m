@@ -64,6 +64,7 @@ for i = 1:length(activities)
         text(i-0.2,j,sprintf('%.3f',cmat_all(j,i)),'FontSize',14,'FontWeight','bold','Color',col);
     end
 end
+saveas(gcf,'cmatHealthy.jpg')
 
 
 %% Global Patients 
@@ -130,6 +131,7 @@ for i = 1:length(activities)
         text(i-0.2,j,sprintf('%.3f',cmat_all(j,i)),'FontSize',14,'FontWeight','bold','Color',col);
     end
 end
+saveas(gcf,'cmatISpec.jpg')
 
 %% Patient specific
 clear results
@@ -195,6 +197,7 @@ for i = 1:length(activities)
         text(i-0.2,j,sprintf('%.3f',cmat_all(j,i)),'FontSize',14,'FontWeight','bold','Color',col);
     end
 end
+saveas(gcf,'cmatPSpec.jpg')
 
 %% Device Specific 
 clear results
@@ -260,4 +263,50 @@ for i = 1:length(activities)
         text(i-0.2,j,sprintf('%.3f',cmat_all(j,i)),'FontSize',14,'FontWeight','bold','Color',col);
     end
 end
+saveas(gcf,'cmatDSpec.jpg')
 
+%% Plot Global models simulations
+figure
+%Healthy
+mat_BACC = csvread('./PyCode/results_GlobalH.csv');
+%Plot results
+hold on
+N = size(mat_BACC,2); %number of patients
+x = 1:N;
+avg = mean(mat_BACC,1); %average
+%sem = std(mat_BACC,[],1)./sqrt(size(mat_BACC,1)); %standard error of the mean
+%stddev = std(mat_BACC,[],1); %standard error of the mean
+%errorbar(1:N,avg,sem,'ko-','LineWidth',2,'markerfacecolor','k');
+mu = zeros(1,size(mat_BACC,2)); %stores bootsrapped mean
+CI_boot = zeros(2,size(mat_BACC,2)); %stores upper and lower CI bounds
+CI_bars = zeros(2,size(mat_BACC,2)); %CI relative to the mean)
+Nboot = 1000;
+for b = 1:size(mat_BACC,2)
+    bootstat1 = bootstrp(Nboot,@mean,mat_BACC(:,b));
+    mu(b) = mean(bootstat1);
+    CI_boot(:,b) = bootci(Nboot,{@mean,mat_BACC(:,b)},'alpha',0.05);
+    CI_bars(:,b) = abs(CI_boot(:,b) - mu(b));
+end
+h1 = shadedErrorBar(1:N,mu,flipud(CI_bars),{'b-o','markerfacecolor','b'},1);
+
+%Patients
+mat_BACC = csvread('./PyCode/results_GlobalP.csv');
+hold on
+N = size(mat_BACC,2); %number of patients
+x = 1:N;
+avg = mean(mat_BACC,1); %average
+%sem = std(mat_BACC,[],1)./sqrt(size(mat_BACC,1)); %standard error of the mean
+%stddev = std(mat_BACC,[],1); %standard error of the mean
+%errorbar(1:N,avg,sem,'ko-','LineWidth',2,'markerfacecolor','k');
+mu = zeros(1,size(mat_BACC,2)); %stores bootsrapped mean
+CI_boot = zeros(2,size(mat_BACC,2)); %stores upper and lower CI bounds
+CI_bars = zeros(2,size(mat_BACC,2)); %CI relative to the mean)
+Nboot = 1000;
+for b = 1:size(mat_BACC,2)
+    bootstat1 = bootstrp(Nboot,@mean,mat_BACC(:,b));
+    mu(b) = mean(bootstat1);
+    CI_boot(:,b) = bootci(Nboot,{@mean,mat_BACC(:,b)},'alpha',0.05);
+    CI_bars(:,b) = abs(CI_boot(:,b) - mu(b));
+end
+h4 = shadedErrorBar(1:N,mu,flipud(CI_bars),{'-o','Color',[0 0.5 0],'MarkerFaceColor',[0 0.5 0]},1);
+saveas(gcf,'globalmodelsims.jpg')
