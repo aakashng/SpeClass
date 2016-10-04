@@ -1,7 +1,34 @@
 % plot confusion matrices from python code 
 activities = {'Sit','Stairs Dw','Stairs Up','Stand','Walk'};
 thres = 0.6; %for text color
-%% Healthy 
+
+%% BOX PLOT
+load ./PyCode/results.csv
+data = results;
+figure;
+bp = boxplot(data);
+set(bp,'linewidth',2);
+ylim([0.3 1])
+ylabel('Balanced Accuracy','FontSize',12)
+set(gca,'Box','off','XTick',[1:4],'XTickLabel',{'Healthy','Impairment-Specific','Patient-Specific','Device-Specific'},'YTick',[0.1:0.1:1],'TickDir','out','LineWidth',2,'FontSize',12,'FontWeight','bold');
+
+%Change box border to black
+b = get(get(gca,'children'),'children');   % Get the handles of all the objects
+t = get(b,'tag');   % List the names of all the objects 
+box1 = b(9:12);   %The 7th object is the first box
+set(box1, 'Color', 'k');   % Set the color of the first box
+
+%Change box fill
+h = findobj(gca,'Tag','Box');
+patch(get(h(1),'XData'),get(h(1),'YData'),[0 1 0],'FaceAlpha',0.2);
+patch(get(h(2),'XData'),get(h(2),'YData'),[0 0 1],'FaceAlpha',0.35);
+patch(get(h(3),'XData'),get(h(3),'YData'),[0.8 0.81 0.17],'FaceAlpha',0.2);
+patch(get(h(4),'XData'),get(h(4),'YData'),[1 0 0],'FaceAlpha',0.2);
+
+saveas(gcf,'BoxplotBacc.jpg')
+
+%% CONFUSION MATRICES
+%Healthy 
 %load cmats for 
 load ./PyCode/cmatHealthy.mat
 
@@ -40,7 +67,6 @@ cmat_all = cmat_all./correctones
 
 figure, 
 imagesc(cmat_all); 
-colorbar
 colormap(gray)
 colormap(flipud(colormap))
 [cmin,cmax] = caxis;
@@ -107,7 +133,6 @@ cmat_all = cmat_all./correctones
 
 figure, 
 imagesc(cmat_all); 
-colorbar
 colormap(gray)
 colormap(flipud(colormap))
 [cmin,cmax] = caxis;
@@ -173,7 +198,6 @@ cmat_all = cmat_all./correctones
 
 figure, 
 imagesc(cmat_all); 
-colorbar
 colormap(gray)
 colormap(flipud(colormap))
 [cmin,cmax] = caxis;
@@ -239,7 +263,6 @@ cmat_all = cmat_all./correctones
 
 figure, 
 imagesc(cmat_all); 
-colorbar
 colormap(gray)
 colormap(flipud(colormap))
 [cmin,cmax] = caxis;
