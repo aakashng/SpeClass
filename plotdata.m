@@ -10,7 +10,7 @@ bp = boxplot(data);
 set(bp,'linewidth',2);
 ylim([0.3 1])
 ylabel('Balanced Accuracy','FontSize',12)
-set(gca,'Box','off','XTick',[1:4],'XTickLabel',{'Healthy','Impairment-Specific','Patient-Specific','Device-Specific'},'YTick',[0.1:0.1:1],'TickDir','out','LineWidth',2,'FontSize',12,'FontWeight','bold');
+set(gca,'Box','off','XTick',[1:4],'XTickLabel',{'Healthy','Impairment-Specific','Patient-Specific','Patient&Device-Specific'},'YTick',[0.1:0.1:1],'TickDir','out','LineWidth',2,'FontSize',12,'FontWeight','bold');
 
 %Change box border to black
 b = get(get(gca,'children'),'children');   % Get the handles of all the objects
@@ -332,4 +332,12 @@ for b = 1:size(mat_BACC,2)
     CI_bars(:,b) = abs(CI_boot(:,b) - mu(b));
 end
 h4 = shadedErrorBar(1:N,mu,flipud(CI_bars),{'-o','Color',[0 0.5 0],'MarkerFaceColor',[0 0.5 0]},1);
+xlabel('Number of subjects trained on','FontSize',14);
+ylabel('Mean Balanced Accuracy','FontSize',14);
+% title('Global Models Performance','FontSize',14)
+xlim([1 11])
+% ylim([0.45 0.7])
+legend([h1.mainLine h4.mainLine],'Healthy Model','Impairment-Specific Model','Location','southeast')
+set(gca,'Box','off','XTick',[1:max_subjects],'YTick',[0.1:0.05:1],'TickDir','out','LineWidth',2,'FontSize',14,'FontWeight','bold','XGrid','off');
 saveas(gcf,'globalmodelsims.jpg')
+
