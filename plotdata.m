@@ -312,7 +312,7 @@ end
 h1 = shadedErrorBar(1:N,mu,flipud(CI_bars),{'b-o','markerfacecolor','b'},1);
 
 %Patients
-mat_BACC = csvread('./PyCode/results_GlobalP.csv');
+mat_BACC = csvread('./PyCode/results_GlobalP_CBR.csv');
 hold on
 N = size(mat_BACC,2); %number of patients
 x = 1:N;
