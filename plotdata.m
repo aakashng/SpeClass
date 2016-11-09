@@ -1,6 +1,3 @@
-% plot confusion matrices from python code 
-activities = {'Sit','Stairs Dw','Stairs Up','Stand','Walk'};
-thres = 0.6; %for text color
 
 %% BOX PLOT 4 models
 load ./PyCode/results.csv
@@ -35,9 +32,9 @@ figure;
 bp = boxplot(data);
 set(bp,'linewidth',2);
 ylim([0.3 1])
-ylabel('Balanced Accuracy','FontSize',12)
+ylabel('Balanced Accuracy','FontSize',14)
 set(gca,'Box','off','XTick',[1:5],'XTickLabel',{'Healthy','Impairment-Specific','Device-Specific', 'Patient-Specific' 'Patient & Device-Specific'},...
-    'XTickLabelRotation',45,'YTick',[0.1:0.1:1],'TickDir','out','LineWidth',2,'FontSize',12,'FontWeight','bold');
+    'XTickLabelRotation',45,'YTick',[0.1:0.1:1],'TickDir','out','LineWidth',2,'FontSize',14,'FontWeight','bold');
 
 %Change box border to black
 b = get(get(gca,'children'),'children');   % Get the handles of all the objects
@@ -56,6 +53,12 @@ patch(get(h(5),'XData'),get(h(5),'YData'),[1 0 0],'FaceAlpha',0.2); %healthy
 saveas(gcf,'BoxplotBacc.jpg')
 
 %% CONFUSION MATRICES
+% plot confusion matrices from python code 
+activities = {'Sit','Stairs Dw','Stairs Up','Stand','Walk'};
+thres = 60; %for text color
+fs = 12; %font size
+figure, hold on
+
 %Healthy 
 %load cmats for 
 load ./PyCode/cmatHealthy.mat
@@ -92,36 +95,37 @@ end
 correctones = sum(cmat_all,2);
 correctones = repmat(correctones,[1 length(activities)]);
 cmat_all = cmat_all./correctones
-
-figure, 
+cmat_all = cmat_all*100
+% figure, 
+subplot(2,3,1)
 imagesc(cmat_all); 
 colormap(gray)
 colormap(flipud(colormap))
 [cmin,cmax] = caxis;
-caxis([0,1]) %set colormap to 0 1
+caxis([0,100]) %set colormap to 0 1
 ax = gca;
 ax.XTick = 1:size(activities,2);
 ax.YTick = 1:size(activities,2);
-set(gca,'XTickLabel',activities)%'FontSize',14)
-set(gca,'YTickLabel',activities)%'FontSize',14)
+set(gca,'XTickLabel',activities,'FontSize',12)
+set(gca,'YTickLabel',activities,'FontSize',12)
 ax.XTickLabelRotation = 45;
 axis square
-title('Healthy model','FontSize',14), hold on
+title('Healthy model','FontSize',12), hold on
 %add text
 for i = 1:length(activities)
     for j = 1:length(activities)
-        if cmat_all(i,j) > thres
+        if cmat_all(j,i) > thres
             col = [1 1 1];
         else
             col = [0 0 0];
         end
-        text(i-0.2,j,sprintf('%.3f',cmat_all(j,i)),'FontSize',14,'FontWeight','bold','Color',col);
+        text(i-0.2,j,sprintf('%.1f',cmat_all(j,i)),'FontSize',14,'FontWeight','bold','Color',col);
     end
 end
-saveas(gcf,'cmatHealthy.jpg')
+% saveas(gcf,'cmatHealthy.jpg')
 
 
-%% Global Patients SCO
+% Global Patients SCO
 clear results
 %load cmats
 load ./PyCode/cmatISpec.mat
@@ -158,37 +162,39 @@ end
 correctones = sum(cmat_all,2);
 correctones = repmat(correctones,[1 length(activities)]);
 cmat_all = cmat_all./correctones
+cmat_all = cmat_all*100
 
-figure, 
+% figure, 
+subplot(2,3,2)
 imagesc(cmat_all); 
 colormap(gray)
 colormap(flipud(colormap))
 [cmin,cmax] = caxis;
-caxis([0,1]) %set colormap to 0 1
+caxis([0,100]) %set colormap to 0 1
 ax = gca;
 ax.XTick = 1:size(activities,2);
 ax.YTick = 1:size(activities,2);
-set(gca,'XTickLabel',activities)%'FontSize',14)
-set(gca,'YTickLabel',activities)%'FontSize',14)
+set(gca,'XTickLabel',activities,'FontSize',12)
+set(gca,'YTickLabel',activities,'FontSize',12)
 ax.XTickLabelRotation = 45;
 axis square
 title('Impairment Specific model','FontSize',14), hold on
 %add text
 for i = 1:length(activities)
     for j = 1:length(activities)
-        if cmat_all(i,j) > thres
+        if cmat_all(j,i) > thres
             col = [1 1 1];
         else
             col = [0 0 0];
         end
-        text(i-0.2,j,sprintf('%.3f',cmat_all(j,i)),'FontSize',14,'FontWeight','bold','Color',col);
+        text(i-0.2,j,sprintf('%.1f',cmat_all(j,i)),'FontSize',14,'FontWeight','bold','Color',col);
     end
 end
 saveas(gcf,'cmatISpec.jpg')
 
 
 
-%% Global Patients CBR
+% Global Patients CBR
 clear results
 %load cmats
 load ./PyCode/cmatISpecCBR.mat
@@ -225,35 +231,37 @@ end
 correctones = sum(cmat_all,2);
 correctones = repmat(correctones,[1 length(activities)]);
 cmat_all = cmat_all./correctones
+cmat_all = cmat_all*100
 
-figure, 
+% figure,
+subplot(2,3,3)
 imagesc(cmat_all); 
 colormap(gray)
 colormap(flipud(colormap))
 [cmin,cmax] = caxis;
-caxis([0,1]) %set colormap to 0 1
+caxis([0,100]) %set colormap to 0 1
 ax = gca;
 ax.XTick = 1:size(activities,2);
 ax.YTick = 1:size(activities,2);
-set(gca,'XTickLabel',activities)%'FontSize',14)
-set(gca,'YTickLabel',activities)%'FontSize',14)
+set(gca,'XTickLabel',activities,'FontSize',12)
+set(gca,'YTickLabel',activities,'FontSize',12)
 ax.XTickLabelRotation = 45;
 axis square
 title('Device Specific model','FontSize',14), hold on
 %add text
 for i = 1:length(activities)
     for j = 1:length(activities)
-        if cmat_all(i,j) > thres
+        if cmat_all(j,i) > thres
             col = [1 1 1];
         else
             col = [0 0 0];
         end
-        text(i-0.2,j,sprintf('%.3f',cmat_all(j,i)),'FontSize',14,'FontWeight','bold','Color',col);
+        text(i-0.2,j,sprintf('%.1f',cmat_all(j,i)),'FontSize',14,'FontWeight','bold','Color',col);
     end
 end
 saveas(gcf,'cmatISpecCBR.jpg')
 
-%% Patient specific
+% Patient specific
 clear results
 %load cmats
 load ./PyCode/cmatPSpec.mat
@@ -290,18 +298,20 @@ end
 correctones = sum(cmat_all,2);
 correctones = repmat(correctones,[1 length(activities)]);
 cmat_all = cmat_all./correctones
+cmat_all = cmat_all*100
 
-figure, 
+% figure, 
+subplot(2,3,4)
 imagesc(cmat_all); 
 colormap(gray)
 colormap(flipud(colormap))
 [cmin,cmax] = caxis;
-caxis([0,1]) %set colormap to 0 1
+caxis([0,100]) %set colormap to 0 1
 ax = gca;
 ax.XTick = 1:size(activities,2);
 ax.YTick = 1:size(activities,2);
-set(gca,'XTickLabel',activities)%'FontSize',14)
-set(gca,'YTickLabel',activities)%'FontSize',14)
+set(gca,'XTickLabel',activities,'FontSize',12)
+set(gca,'YTickLabel',activities,'FontSize',12)
 ax.XTickLabelRotation = 45;
 axis square
 title('Patient Specific model','FontSize',14), hold on
@@ -313,12 +323,12 @@ for i = 1:length(activities)
         else
             col = [0 0 0];
         end
-        text(i-0.2,j,sprintf('%.3f',cmat_all(j,i)),'FontSize',14,'FontWeight','bold','Color',col);
+        text(i-0.2,j,sprintf('%.1f',cmat_all(j,i)),'FontSize',14,'FontWeight','bold','Color',col);
     end
 end
 saveas(gcf,'cmatPSpec.jpg')
 
-%% Patient and Device Specific 
+%Patient and Device Specific 
 clear results
 %load cmats
 load ./PyCode/cmatDSpec.mat
@@ -355,18 +365,20 @@ end
 correctones = sum(cmat_all,2);
 correctones = repmat(correctones,[1 length(activities)]);
 cmat_all = cmat_all./correctones
+cmat_all = cmat_all*100
 
-figure, 
+% figure, 
+subplot(2,3,5)
 imagesc(cmat_all); 
 colormap(gray)
 colormap(flipud(colormap))
 [cmin,cmax] = caxis;
-caxis([0,1]) %set colormap to 0 1
+caxis([0,100]) %set colormap to 0 1
 ax = gca;
 ax.XTick = 1:size(activities,2);
 ax.YTick = 1:size(activities,2);
-set(gca,'XTickLabel',activities)%'FontSize',14)
-set(gca,'YTickLabel',activities)%'FontSize',14)
+set(gca,'XTickLabel',activities,'FontSize',12)
+set(gca,'YTickLabel',activities,'FontSize',12)
 ax.XTickLabelRotation = 45;
 axis square
 title('Patient & Device Specific model','FontSize',14), hold on
@@ -378,11 +390,12 @@ for i = 1:length(activities)
         else
             col = [0 0 0];
         end
-        text(i-0.2,j,sprintf('%.3f',cmat_all(j,i)),'FontSize',14,'FontWeight','bold','Color',col);
+        text(i-0.2,j,sprintf('%.1f',cmat_all(j,i)),'FontSize',14,'FontWeight','bold','Color',col);
     end
 end
-saveas(gcf,'cmatPDSpec.jpg')
+% saveas(gcf,'cmatPDSpec.jpg')
 
+saveas(gcf,'cmats.tif','tiff')
 %% Plot Global models simulations
 %Estimate median rather than the mean
 figure
