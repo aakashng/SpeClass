@@ -485,11 +485,12 @@ h5 = shadedErrorBar(1:N,mu,flipud(CI_bars),{'-o','Color',[1 0.5 0],'MarkerFaceCo
 
 %Final plot
 xlabel('Number of subjects trained on','FontSize',14);
-ylabel('Medan Balanced Accuracy','FontSize',14);
+ylabel('Median Balanced Accuracy','FontSize',14);
 % title('Global Models Performance','FontSize',14)
 xlim([1 11])
 ylim([0.4 0.78])
 h6 = plot(1:11,0.76*ones(1,11),'-','LineWidth',3,'Color',[0 0.6 0.2])%,'FaceAlpha',0.2)
 legend([h1.mainLine h4.mainLine h5.mainLine h6],{'Healthy Model','Impairment-Specific Model','Device-Specific Model','Patient & Device-Specific'},'Position',[0.2 0.62 0.3 0.2])%'Location','northwest')
 set(gca,'Box','off','XTick',[1:11],'YTick',[0.1:0.05:1],'TickDir','out','LineWidth',1,'FontSize',12,'XGrid','off');
-saveas(gcf,'globalmodelsims.tif')
+% saveas(gcf,'globalmodelsims.tif')
+print('globalmodelsims','-dpdf','-r300')
