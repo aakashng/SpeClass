@@ -419,13 +419,14 @@ for b = 1:size(mat_BACC,2)
 end
 h1 = shadedErrorBar(1:N,mu,flipud(CI_bars),{'r-o','markerfacecolor','r'},1);
 
-%y = (a-b)*exp(-c*x)+b;
-expfit = fittype('(a - b)*exp(-c*x) +b',...
-    'dependent',{'y'},'independent',{'x'},...
-    'coefficients',{'a','b','c'});
-x = 1:N; y = mu;
-[myfitH,gofH,outputH] = fit(x',y',expfit);
-plot(myfitH,x,y)
+%fitting exponential
+% %y = (a-b)*exp(-c*x)+b;
+% expfit = fittype('(a - b)*exp(-c*x) +b',...
+%     'dependent',{'y'},'independent',{'x'},...
+%     'coefficients',{'a','b','c'});
+% x = 1:N; y = mu;
+% [myfitH,gofH,outputH] = fit(x',y',expfit);
+% % plot(myfitH,x,y)
 
 
 %Patients SCO
@@ -449,9 +450,11 @@ for b = 1:size(mat_BACC,2)
 end
 h4 = shadedErrorBar(1:N,mu,flipud(CI_bars),{'-o','Color',[0 0 0.8],'MarkerFaceColor',[0 0 0.8]},1);
 %[1 0.8 0]
-x = 1:N; y = mu;
-[myfitSCO,gofSCO,outputSCO] = fit(x',y',expfit);
-plot(myfitSCO,x,y)
+
+% %fitting exponential
+% x = 1:N; y = mu;
+% [myfitSCO,gofSCO,outputSCO] = fit(x',y',expfit);
+% plot(myfitSCO,x,y)
 
 %Patients CBR
 mat_BACC = csvread('./PyCode/results_GlobalP_CBR.csv');
@@ -472,18 +475,21 @@ for b = 1:size(mat_BACC,2)
     CI_boot(:,b) = bootci(Nboot,{@median,mat_BACC(:,b)},'alpha',0.05);
     CI_bars(:,b) = abs(CI_boot(:,b) - mu(b));
 end
-h5 = shadedErrorBar(1:N,mu,flipud(CI_bars),{'-o','Color',[0 0.5 0],'MarkerFaceColor',[0 0.5 0]},1);
+h5 = shadedErrorBar(1:N,mu,flipud(CI_bars),{'-o','Color',[1 0.5 0],'MarkerFaceColor',[1 0.5 0]},1);
 %[1 0.5 0]
-x = 1:N; y = mu;
-[myfitCBR,gofCBR,outputCBR] = fit(x',y',expfit);
-plot(myfitCBR,x,y)
+
+% %Fitting exponential 
+% x = 1:N; y = mu;
+% [myfitCBR,gofCBR,outputCBR] = fit(x',y',expfit);
+% plot(myfitCBR,x,y)
 
 %Final plot
 xlabel('Number of subjects trained on','FontSize',14);
 ylabel('Medan Balanced Accuracy','FontSize',14);
 % title('Global Models Performance','FontSize',14)
 xlim([1 11])
-% ylim([0.45 0.7])
-legend([h1.mainLine h4.mainLine h5.mainLine],'Healthy Model','Impairment-Specific Model','Device-Specific Model','Location','southeast')
-set(gca,'Box','off','XTick',[1:11],'YTick',[0.1:0.05:1],'TickDir','out','LineWidth',2,'FontSize',14,'FontWeight','bold','XGrid','off');
-saveas(gcf,'globalmodelsims.jpg')
+ylim([0.4 0.78])
+h6 = plot(1:11,0.76*ones(1,11),'-','LineWidth',3,'Color',[0 0.6 0.2])%,'FaceAlpha',0.2)
+legend([h1.mainLine h4.mainLine h5.mainLine h6],{'Healthy Model','Impairment-Specific Model','Device-Specific Model','Patient & Device-Specific'},'Position',[0.2 0.62 0.3 0.2])%'Location','northwest')
+set(gca,'Box','off','XTick',[1:11],'YTick',[0.1:0.05:1],'TickDir','out','LineWidth',1,'FontSize',12,'XGrid','off');
+saveas(gcf,'globalmodelsims.tif')
