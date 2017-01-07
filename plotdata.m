@@ -110,7 +110,9 @@ set(gca,'XTickLabel',activities,'FontSize',12)
 set(gca,'YTickLabel',activities,'FontSize',12)
 ax.XTickLabelRotation = 45;
 axis square
-title('Healthy model','FontSize',12), hold on
+title('Healthy model','FontSize',16), hold on
+xlabel('Predicted Activities','FontSize',14)
+ylabel('True Activities','FontSize',14)
 %add text
 for i = 1:length(activities)
     for j = 1:length(activities)
@@ -178,7 +180,9 @@ set(gca,'XTickLabel',activities,'FontSize',12)
 set(gca,'YTickLabel',activities,'FontSize',12)
 ax.XTickLabelRotation = 45;
 axis square
-title('Impairment Specific model','FontSize',14), hold on
+title('Impairment Specific model','FontSize',16), hold on
+xlabel('Predicted Activities','FontSize',14)
+ylabel('True Activities','FontSize',14)
 %add text
 for i = 1:length(activities)
     for j = 1:length(activities)
@@ -247,7 +251,10 @@ set(gca,'XTickLabel',activities,'FontSize',12)
 set(gca,'YTickLabel',activities,'FontSize',12)
 ax.XTickLabelRotation = 45;
 axis square
-title('Device Specific model','FontSize',14), hold on
+title('Device Specific model','FontSize',16), hold on
+xlabel('Predicted Activities','FontSize',14)
+ylabel('True Activities','FontSize',14)
+
 %add text
 for i = 1:length(activities)
     for j = 1:length(activities)
@@ -314,7 +321,10 @@ set(gca,'XTickLabel',activities,'FontSize',12)
 set(gca,'YTickLabel',activities,'FontSize',12)
 ax.XTickLabelRotation = 45;
 axis square
-title('Patient Specific model','FontSize',14), hold on
+title('Patient Specific model','FontSize',16), hold on
+xlabel('Predicted Activities','FontSize',14)
+ylabel('True Activities','FontSize',14)
+
 %add text
 for i = 1:length(activities)
     for j = 1:length(activities)
@@ -381,7 +391,10 @@ set(gca,'XTickLabel',activities,'FontSize',12)
 set(gca,'YTickLabel',activities,'FontSize',12)
 ax.XTickLabelRotation = 45;
 axis square
-title('Patient & Device Specific model','FontSize',14), hold on
+title('Patient & Device Specific model','FontSize',16), hold on
+xlabel('Predicted Activities','FontSize',14)
+ylabel('True Activities','FontSize',14)
+
 %add text
 for i = 1:length(activities)
     for j = 1:length(activities)
@@ -490,7 +503,7 @@ ylabel('Median Balanced Accuracy','FontSize',14);
 xlim([1 11])
 ylim([0.4 0.78])
 h6 = plot(1:11,0.76*ones(1,11),'-','LineWidth',3,'Color',[0 0.6 0.2])%,'FaceAlpha',0.2)
-legend([h1.mainLine h4.mainLine h5.mainLine h6],{'Healthy Model','Impairment-Specific Model','Device-Specific Model','Patient & Device-Specific'},'Position',[0.2 0.62 0.3 0.2])%'Location','northwest')
+legend([h1.mainLine h4.mainLine h5.mainLine h6],{'Healthy Model','Impairment-Specific Model','Device-Specific Model','Patient & Device-Specific Model'},'Position',[0.2 0.62 0.3 0.2])%'Location','northwest')
 set(gca,'Box','off','XTick',[1:11],'YTick',[0.1:0.05:1],'TickDir','out','LineWidth',1,'FontSize',12,'XGrid','off');
 % saveas(gcf,'globalmodelsims.tif')
 print('globalmodelsims','-dpdf','-r300')
